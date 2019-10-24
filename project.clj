@@ -9,7 +9,10 @@
                  [secretary "1.2.3"]
                  [garden "1.3.9"]
                  [ns-tracker "0.4.0"]
-                 [camel-snake-kebab "0.4.0"]]
+                 [camel-snake-kebab "0.4.0"]
+                 [day8.re-frame/http-fx "0.1.6"]
+                 [cljs-ajax "0.8.0"]
+                 [funcool/decimal "1.0.2"]]
 
   :plugins [[lein-garden "0.3.0"]
             [lein-shell "0.5.0"]]

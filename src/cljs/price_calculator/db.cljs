@@ -6,6 +6,7 @@
    :local-storage-max 200
    :current-selection {}
    :selection-list []
+   :currency-type "CHF"
    :product-groups {:standard-instances
                     {:name "Standard Instances"
                      :instance-types

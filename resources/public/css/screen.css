@@ -1,5 +1,7 @@
 body {
   color: black;
+  margin-left: 100px;
+  margin-right: 100px;
 }
 
 body label {
@@ -10,19 +12,28 @@ body div .price-calculator {
   position: fixed;
   background-color: #da291c;
   color: #ffffff;
+  top: 0px;
+  right: 0px;
   padding: 15px;
-  padding-top: 0px;
-  padding-bottom: 0px;
-  right: 500px;
+  margin: 10px;
+  border: 2px solid #a40808;
 }
 
 body .btn {
   background-color: #da291c;
   border: 1px solid white;
   color: #ffffff;
-  padding: 3px;
+  box-shadow: 5px 5px 2.5px grey;
+  padding: 5px;
+  margin: 5px;
   display: block;
-  margin-left: 50px;
+  margin-left: 25px;
+}
+
+body .btn-small {
+  background-color: #ffffff;
+  border: 0.5px solid black;
+  color: #da291c;
 }
 
 body .btn-submit {
@@ -34,6 +45,26 @@ body .btn-submit {
   display: block;
 }
 
-body input.invalid {
-  border: 1px solid red;
+body table.red-table {
+  width: auto;
+  right: 0px;
+  border: 2px solid #a40808;
+  border-collapse: collapse;
+  text-align: center;
+  position: fixed;
+  background-color: #da291c;
+  display: block;
+  bottom: 0px;
+  color: white;
+}
+
+body table.red-table th, body table.red-table td {
+  border: 1px solid #aaaaaa;
+  padding: 3px 2px;
+}
+
+body table.red-table tbody td {
+  font-size: 13px;
+  background-color: white;
+  color: black;
 }

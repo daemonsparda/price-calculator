@@ -1,11 +1,12 @@
 (ns price-calculator.core
   (:require
    [reagent.core :as reagent]
-   [re-frame.core :as re-frame]
+   [re-frame.core :as rf]
    [price-calculator.events :as events]
    [price-calculator.routes :as routes]
    [price-calculator.views :as views]
-   [price-calculator.config :as config]))
+   [price-calculator.config :as config]
+   [day8.re-frame.http-fx]))
 
 
 (defn dev-setup []
@@ -13,12 +14,16 @@
     (println "dev mode")))
 
 (defn ^:dev/after-load mount-root []
-  (re-frame/clear-subscription-cache!)
+  (rf/clear-subscription-cache!)
   (reagent/render [views/main-panel]
                   (.getElementById js/document "app")))
 
 (defn init []
   (routes/app-routes)
-  (re-frame/dispatch-sync [::events/initialize-db])
+  (rf/dispatch-sync [::events/initialize-db])
+  (rf/dispatch-sync [::events/fetch-licenses])
+  (rf/dispatch-sync [::events/fetch-open-compute])
+  (rf/dispatch-sync [::events/fetch-sos])
+        
   (dev-setup)
   (mount-root))

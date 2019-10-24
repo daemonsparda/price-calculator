@@ -3,7 +3,8 @@
    [re-frame.core :as re-frame]
    [camel-snake-kebab.core :as csk]
    [price-calculator.db :as db]
-   [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]))
+   [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
+   [ajax.core :as ajax]))
 
 
 (re-frame/reg-event-db
@@ -25,6 +26,74 @@
   (let [product-group-keyword (csk/->kebab-case-keyword value)]
     (assoc db :product-group-keyword product-group-keyword)
     (assoc-in db [:selection :product-group] value)))
+
+(re-frame/reg-event-db
+ ::fetch-licenses-success
+ (fn-traced [db [_ result]]
+            (assoc-in db [:http :licenses-result] (get-in result [:chf :license_win]))))
+
+(re-frame/reg-event-db
+ ::fetch-licenses-failure
+ (fn-traced [db [_ result]]
+            (assoc-in db [:http :failure :licenses-result] result)))
+
+;; HTTP Requests
+(re-frame/reg-event-fx
+ ::fetch-licenses
+ (fn-traced [{:keys [db]} _]
+            {:db (assoc db :show-loading-screen true)
+             :http-xhrio {:method :get
+                          :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/licenses.json"
+                          :timeout 8000
+                          :response-format (ajax/json-response-format {:keywords? true})
+                          :on-success [::fetch-licenses-success]
+                          :on-failure [::fetch-licenses-failure]}}))
+
+(re-frame/reg-event-db
+ ::fetch-open-compute-success
+ (fn-traced [db [_ result]]
+            (assoc-in db [:http :open-compute-result] (:chf result))))
+
+(re-frame/reg-event-db
+ ::fetch-open-compute-failure
+ (fn-traced [db [_ result]]
+            (assoc-in db [:http :failure :open-compute-result] result)))
+
+;; HTTP Requests
+(re-frame/reg-event-fx
+ ::fetch-open-compute
+ (fn-traced [{:keys [db]} _]
+            {:db (assoc db :show-loading-screen true)
+             :http-xhrio {:method :get
+                          :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/opencompute.json"
+                          :timeout 8000
+                          :response-format (ajax/json-response-format {:keywords? true})
+                          :on-success [::fetch-open-compute-success]
+                          :on-failure [::fetch-open-compute-failure]}}))
+
+(re-frame/reg-event-db
+ ::fetch-sos-success
+ (fn-traced [db [_ result]]
+            (assoc-in db [:http :sos-result] (:chf result))))
+
+(re-frame/reg-event-db
+ ::fetch-sos-failure
+ (fn-traced [db [_ result]]
+            (assoc-in db [:http :failure :sos-result] result)))
+
+;; HTTP Requests
+(re-frame/reg-event-fx
+ ::fetch-sos
+ (fn-traced [{:keys [db]} _]
+            {:db (assoc db :show-loading-screen true)
+             :http-xhrio {:method :get
+                          :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/sos.json"
+                          :timeout 8000
+                          :response-format (ajax/json-response-format {:keywords? true})
+                          :on-success [::fetch-sos-success]
+                          :on-failure [::fetch-sos-failure]}}))
+
+;; Selection Events
 
 (re-frame/reg-event-db
  ::set-product-group
@@ -111,11 +180,19 @@
  ::set-license
  set-license)
 
-(defn-traced submit-selection
+(defn-traced add-selection
   [db [_ value]]
   (let [selection-list (:selection-list db)]
        (assoc db :selection-list (conj selection-list value))))
 
 (re-frame/reg-event-db
- ::submit-selection
- submit-selection)
+ ::add-selection
+ add-selection)
+
+(defn-traced set-currency-type
+  [db [_ value]]
+  (assoc db :currency-type value))
+
+(re-frame/reg-event-db
+ ::set-currency-type
+ set-currency-type)
