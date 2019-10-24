@@ -2,8 +2,6 @@
 
 (def default-db
   {:name "Price Calculator"
-   :local-storage-min 10
-   :local-storage-max 200
    :current-selection {}
    :selection-list []
    :currency-type "CHF"
@@ -65,28 +63,28 @@
                      :instance-types [{:name "EXTRA-LARGE"
                                        :ram "16 GB"
                                        :cpu-cores "4 Cores"
-                                       :local-storage {:min 1
-                                                       :max 2}}
+                                       :local-storage {:min 1000
+                                                       :max 2000}}
                                       {:name "HUGE"
                                        :ram "32 GB"
                                        :cpu-cores "8 Core"
-                                       :local-storage {:min 2
-                                                       :max 3}}
+                                       :local-storage {:min 2000
+                                                       :max 3000}}
                                       {:name "MEGA"
                                        :ram "64 GB"
                                        :cpu-cores "12 Cores"
-                                       :local-storage {:min 3
-                                                       :max 5}}
+                                       :local-storage {:min 3000
+                                                       :max 5000}}
                                       {:name "TITAN"
                                        :ram "128 GB"
                                        :cpu-cores "16 Cores"
-                                       :local-storage {:min 5
-                                                       :max 10}}
+                                       :local-storage {:min 5000
+                                                       :max 10000}}
                                       {:name "JUMBO"
                                        :ram "225 GB" ;; 256 GB??
                                        :cpu-cores "24 Core"
-                                       :local-storage {:min 10
-                                                       :max 20}}]}
+                                       :local-storage {:min 10000
+                                                       :max 20000}}]}
                     :gpu-instances {:name "GPU Instances"
                                     :gpu2 {:name "GPU2 (Tesla V100)"
                                            :instance-types

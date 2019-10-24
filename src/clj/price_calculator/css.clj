@@ -50,6 +50,8 @@
 
 
 
+;; selection color rgb(77, 0, 5)
+
 ;; table.redTable tr:nth-child(even) {
 ;;   background: #F5C8BF;
 ;; }

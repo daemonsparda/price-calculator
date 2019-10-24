@@ -1,17 +1,17 @@
 (ns price-calculator.events
   (:require
    [re-frame.core :as re-frame]
-   [camel-snake-kebab.core :as csk]
    [price-calculator.db :as db]
    [day8.re-frame.tracing :refer-macros [fn-traced defn-traced]]
    [ajax.core :as ajax]))
 
+(defn-traced initialize-db
+  [_ _]
+  db/default-db)
 
 (re-frame/reg-event-db
  ::initialize-db
- (fn-traced
-  [_ _]
-  db/default-db))
+ initialize-db)
 
 (defn-traced set-active-panel
   [db [_ value]]
@@ -21,114 +21,117 @@
  ::set-active-panel
  set-active-panel)
 
-(defn-traced set-product-group
-  [db [_ value]]
-  (let [product-group-keyword (csk/->kebab-case-keyword value)]
-    (assoc db :product-group-keyword product-group-keyword)
-    (assoc-in db [:selection :product-group] value)))
+;; HTTP Request Events
+
+(defn-traced fetch-license-pricing-success
+  [db [_ result]]
+  (assoc-in db [:http :success :license-pricing-result] result))
 
 (re-frame/reg-event-db
- ::fetch-licenses-success
- (fn-traced [db [_ result]]
-            (assoc-in db [:http :licenses-result] (get-in result [:chf :license_win]))))
+ ::fetch-license-pricing-success
+ fetch-license-pricing-success)
+
+(defn-traced fetch-license-pricing-failure
+ [db [_ result]]
+  (assoc-in db [:http :failure :license-pricing-error] result))
 
 (re-frame/reg-event-db
- ::fetch-licenses-failure
- (fn-traced [db [_ result]]
-            (assoc-in db [:http :failure :licenses-result] result)))
+ ::fetch-license-pricing-failure
+ fetch-license-pricing-failure)
 
-;; HTTP Requests
+(defn-traced fetch-license-pricing
+ [{:keys [db]} _]
+ {:db (assoc db :show-loading-screen true)
+  :http-xhrio {:method :get
+               :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/licenses.json"
+               :timeout 8000
+               :response-format (ajax/json-response-format {:keywords? true})
+               :on-success [::fetch-license-pricing-success]
+               :on-failure [::fetch-license-pricing-failure]}})
+
 (re-frame/reg-event-fx
- ::fetch-licenses
- (fn-traced [{:keys [db]} _]
-            {:db (assoc db :show-loading-screen true)
-             :http-xhrio {:method :get
-                          :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/licenses.json"
-                          :timeout 8000
-                          :response-format (ajax/json-response-format {:keywords? true})
-                          :on-success [::fetch-licenses-success]
-                          :on-failure [::fetch-licenses-failure]}}))
+ ::fetch-license-pricing
+ fetch-license-pricing)
+
+(defn-traced fetch-compute-pricing-success
+  [db [_ result]]
+  (assoc-in db [:http :success :compute-pricing-result] result))
 
 (re-frame/reg-event-db
- ::fetch-open-compute-success
- (fn-traced [db [_ result]]
-            (assoc-in db [:http :open-compute-result] (:chf result))))
+ ::fetch-compute-pricing-success
+ fetch-compute-pricing-success)
+
+(defn-traced fetch-compute-pricing-failure
+  [db [_ result]]
+  (assoc-in db [:http :failure :compute-pricing-error] result))
 
 (re-frame/reg-event-db
- ::fetch-open-compute-failure
- (fn-traced [db [_ result]]
-            (assoc-in db [:http :failure :open-compute-result] result)))
+ ::fetch-compute-pricing-failure
+ fetch-compute-pricing-failure)
 
-;; HTTP Requests
+(defn-traced fetch-compute-pricing
+ [{:keys [db]} _]
+ {:db (assoc db :show-loading-screen true)
+  :http-xhrio {:method :get
+               :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/opencompute.json"
+               :timeout 8000
+               :response-format (ajax/json-response-format {:keywords? true})
+               :on-success [::fetch-compute-pricing-success]
+               :on-failure [::fetch-compute-pricing-failure]}})
+
 (re-frame/reg-event-fx
- ::fetch-open-compute
- (fn-traced [{:keys [db]} _]
-            {:db (assoc db :show-loading-screen true)
-             :http-xhrio {:method :get
-                          :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/opencompute.json"
-                          :timeout 8000
-                          :response-format (ajax/json-response-format {:keywords? true})
-                          :on-success [::fetch-open-compute-success]
-                          :on-failure [::fetch-open-compute-failure]}}))
+ ::fetch-compute-pricing
+ fetch-compute-pricing)
+
+
+(defn-traced fetch-object-storage-pricing-success
+ [db [_ result]]
+  (assoc-in db [:http :success :object-storage-pricing-result] result))
 
 (re-frame/reg-event-db
- ::fetch-sos-success
- (fn-traced [db [_ result]]
-            (assoc-in db [:http :sos-result] (:chf result))))
+ ::fetch-object-storage-pricing-success
+ fetch-object-storage-pricing-success)
+
+(defn-traced fetch-object-storage-pricing-failure
+  [db [_ result]]
+  (assoc-in db [:http :failure :object-storage-pricing-error] result))
 
 (re-frame/reg-event-db
- ::fetch-sos-failure
- (fn-traced [db [_ result]]
-            (assoc-in db [:http :failure :sos-result] result)))
+ ::fetch-object-storage-pricing-failure
+ fetch-object-storage-pricing-failure)
 
-;; HTTP Requests
+(defn-traced fetch-object-storage-pricing
+  [{:keys [db]} _]
+  {:db (assoc db :show-loading-screen true)
+   :http-xhrio {:method :get
+                :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/sos.json
+"
+                :timeout 8000
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success [::fetch-object-storage-pricing-success]
+                :on-failure [::fetch-object-storage-pricing-failure]}})
+
 (re-frame/reg-event-fx
- ::fetch-sos
- (fn-traced [{:keys [db]} _]
-            {:db (assoc db :show-loading-screen true)
-             :http-xhrio {:method :get
-                          :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/sos.json"
-                          :timeout 8000
-                          :response-format (ajax/json-response-format {:keywords? true})
-                          :on-success [::fetch-sos-success]
-                          :on-failure [::fetch-sos-failure]}}))
+ ::fetch-object-storage-pricing
+ fetch-object-storage-pricing)
 
 ;; Selection Events
+
+(defn-traced set-product-group
+  [db [_ value]]
+  (assoc-in db [:current-selection :product-group] value))
 
 (re-frame/reg-event-db
  ::set-product-group
  set-product-group)
 
-(defn-traced set-product-group-key
-  [db [_ value]]
-  (let [product-group-key (csk/->kebab-case-keyword value)]
-    (assoc db :product-group-key product-group-key)))
-
-(re-frame/reg-event-db
- ::set-product-group-key
- set-product-group-key)
-
 (defn-traced set-gpu-type
   [db [_ value]]
-  (let [gpu-type-key (if (= value "GPU2 (Tesla V100)")
-                       :gpu2
-                       :gpu)]
-    (assoc-in db [:selection :gpu-type] value)))
+  (assoc-in db [:selection :gpu-type] value))
 
 (re-frame/reg-event-db
  ::set-gpu-type
  set-gpu-type)
-
-(defn-traced set-gpu-type-key
-  [db [_ value]]
-  (let [gpu-keyword (if (= value "GPU2 (Tesla V100)")
-                      :gpu2
-                      :gpu)]
-    (assoc db :gpu-type-key gpu-keyword)))
-
-(re-frame/reg-event-db
- ::set-gpu-type-key
- set-gpu-type-key)
 
 (defn-traced set-instance-type
   [db [_ value]]
@@ -150,7 +153,6 @@
 (re-frame/reg-event-db
  ::set-local-storage-min
  set-local-storage-min)
-
 
 (defn-traced set-local-storage-max
   [db [_ product-group-key instance-type]]
@@ -180,6 +182,14 @@
  ::set-license
  set-license)
 
+(defn-traced set-currency-type
+  [db [_ value]]
+  (assoc db :currency-type value))
+
+(re-frame/reg-event-db
+ ::set-currency-type
+ set-currency-type)
+
 (defn-traced add-selection
   [db [_ value]]
   (let [selection-list (:selection-list db)]
@@ -188,11 +198,3 @@
 (re-frame/reg-event-db
  ::add-selection
  add-selection)
-
-(defn-traced set-currency-type
-  [db [_ value]]
-  (assoc db :currency-type value))
-
-(re-frame/reg-event-db
- ::set-currency-type
- set-currency-type)

@@ -21,9 +21,9 @@
 (defn init []
   (routes/app-routes)
   (rf/dispatch-sync [::events/initialize-db])
-  (rf/dispatch-sync [::events/fetch-licenses])
-  (rf/dispatch-sync [::events/fetch-open-compute])
-  (rf/dispatch-sync [::events/fetch-sos])
+  (rf/dispatch-sync [::events/fetch-license-pricing])
+  (rf/dispatch-sync [::events/fetch-compute-pricing])
+  (rf/dispatch-sync [::events/fetch-object-storage-pricing])
         
   (dev-setup)
   (mount-root))
