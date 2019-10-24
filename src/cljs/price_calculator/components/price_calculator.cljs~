@@ -1,0 +1,5 @@
+(ns price-calculator.components.price-calculator)
+
+
+(defn price-calculator []
+  [:div "Price Calculator"])
