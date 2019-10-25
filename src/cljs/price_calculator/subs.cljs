@@ -5,8 +5,7 @@
 
 (rf/reg-sub
  ::name
- (fn [db]
-   (:name db)))
+ :name)
 
 (rf/reg-sub
  ::active-panel
@@ -40,26 +39,29 @@
     (get-in db [:http :success :object-storage-pricing-result :chf])))
 
 ;; Options
-(rf/reg-sub
- ::product-group-list
- (fn [db _]
-   (let [product-groups (:product-groups db)]
+(defn product-group-list
+  [db _]
+  (let [product-groups (:product-groups db)]
     [(get-in product-groups [:standard-instances :name])
      (get-in product-groups [:storage-optimized-instances :name])
      (get-in product-groups [:gpu-instances :name])
-     (get-in product-groups [:additional-features :name])])))
+     (get-in product-groups [:additional-features :name])]))
+
+(rf/reg-sub
+ ::product-group-list
+ product-group-list)
+
+(defn instance-type-list
+  [db [_ selected-product-group]]
+  (if (= selected-product-group :gpu-instances)
+    (for [instance-type (get-in db [:product-groups selected-product-group :gpu2 :instance-types])]
+      (:name instance-type))
+    (for [instance-type (get-in db [:product-groups selected-product-group :instance-types])]
+      (:name instance-type))))
 
 (rf/reg-sub
  ::instance-type-list
- (fn [db [_ selected-product-group]]
-   (for [instance-type (get-in db [:product-groups selected-product-group :instance-types])]
-     (:name instance-type))))
-
-(rf/reg-sub
- ::gpu-instance-type-list
- (fn [db [_ selected-product-group gpu-type-key]]
-   (for [instance-type (get-in db [:product-groups selected-product-group gpu-type-key :instance-types])]
-     (:name instance-type))))
+ instance-type-list)
 
 (rf/reg-sub
  ::currency-type
@@ -75,44 +77,47 @@
 (rf/reg-sub
  ::product-group-key
  (fn [db _]
-   (let [product-group-key (csk/->kebab-case-keyword @(rf/subscribe [::product-group]))]
-     product-group-key)))
+  (let [product-group-key (csk/->kebab-case-keyword @(rf/subscribe [::product-group]))]
+    product-group-key)))
 
 (rf/reg-sub
  ::instance-type
  (fn [db _]
-   (get-in db [:selection :instance-type])))
+   (get-in db [:current-selection :instance-type] "")))
 
 (rf/reg-sub
  ::gpu-type
  (fn [db _]
-   (get-in db [:selection :gpu-type])))
+   (get-in db [:current-selection :gpu-type])))
 
 (rf/reg-sub
  ::gpu-type-key
  (fn [db _]
-   (let [gpu-type-key (if (= (rf/subscribe [::gpu-type]) "GPU2 (Tesla V100)") :gpu2 :gpu)]
+   (let [gpu-type-key (if (= @(rf/subscribe [::gpu-type]) "GPU2 (Tesla V100)") :gpu2 :gpu)]
      gpu-type-key)))
 
 (rf/reg-sub
  ::local-storage-size
  (fn [db _]
-   (get-in db [:selection :local-storage-size])))
+   (get-in db [:current-selection :local-storage-size])))
 
 (rf/reg-sub
  ::windows-license?
  (fn [db _]
-   (get-in db [:selection :windows-license?])))
+   (get-in db [:current-selection :windows-license?])))
+
+(defn local-storage-range [db [_ product-group-key instance-type]]
+  (let [instance-types (if (= product-group-key :gpu-instances)
+                         (get-in db [:product-groups product-group-key :gpu2 :instance-types])
+                         (get-in db [:product-groups product-group-key :instance-types]))
+         range (first (remove nil? (set (map #(when (= (:name %) instance-type)
+                                                (get % :local-storage))
+                                             instance-types))))]
+     range))
 
 (rf/reg-sub
- ::local-storage-min
- (fn [db _]
-   (:local-storage-min db)))
-
-(rf/reg-sub
- ::local-storage-max
- (fn [db _]
-   (:local-storage-max db)))
+ ::local-storage-range
+ local-storage-range)
 
 (rf/reg-sub
  ::selection-list

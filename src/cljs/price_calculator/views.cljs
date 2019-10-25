@@ -11,11 +11,8 @@
 (defn home-panel []
   (let [name (rf/subscribe [::subs/name])]
     [:div
-     [:h1 (str @name "Assessment")]
+     [:h1 (str @name " Assessment")]
      [:a {:href "#/lets-get-started"} "Let's get started"]]))
-
-
-;; about
 
 ;; should only have the price calculator at the end of the project.
 (defn lets-get-started [] 
@@ -38,6 +35,7 @@
 (defn show-panel [panel-name]
   [panels panel-name])
 
+;; Use this for layout
 (defn main-panel []
   (let [active-panel (rf/subscribe [::subs/active-panel])]
     [show-panel @active-panel]))

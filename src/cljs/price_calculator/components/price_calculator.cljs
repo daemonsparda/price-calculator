@@ -7,8 +7,7 @@
             [price-calculator.components.choose :as choose]
             [goog.string :as g-str]
             [clojure.string :as str]
-            [cljs.reader :refer [read-string]]
-            [decimal.core :as dc]))
+            [cljs.reader :refer [read-string]]))
 
 (defn add-selection
   []
@@ -106,7 +105,7 @@
    [:td (:instance-type selection)]
    [:td (:local-storage-size selection)]
    [:td (:windows-license? selection)]
-   [:td (if (:gpu-type selection) (:gpu-type selection) "N/A")]
+   [:td (or (:gpu-type selection) "N/A")]
    [:td [:input {:type "button" :class "btn-small" :value "x"}]]])
 
 (defn selections

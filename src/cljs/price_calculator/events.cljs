@@ -127,7 +127,7 @@
 
 (defn-traced set-gpu-type
   [db [_ value]]
-  (assoc-in db [:selection :gpu-type] value))
+  (assoc-in db [:current-selection :gpu-type] value))
 
 (re-frame/reg-event-db
  ::set-gpu-type
@@ -135,40 +135,15 @@
 
 (defn-traced set-instance-type
   [db [_ value]]
-  (assoc-in db [:selection :instance-type] value))
+  (assoc-in db [:current-selection :instance-type] value))
 
 (re-frame/reg-event-db
  ::set-instance-type
  set-instance-type)
 
-(defn-traced set-local-storage-min
-  [db [_ product-group-key instance-type]]
-  (let [instance-types (get-in db [:product-groups product-group-key :instance-types])
-        min (first (remove nil? (into #{} (map #(if (= (:name %) instance-type)
-                                           (get-in % [:local-storage :min])
-                                           nil) instance-types))))]
-    
-    (assoc db :local-storage-min min)))
-
-(re-frame/reg-event-db
- ::set-local-storage-min
- set-local-storage-min)
-
-(defn-traced set-local-storage-max
-  [db [_ product-group-key instance-type]]
-  (let [instance-types (get-in db [:product-groups product-group-key :instance-types])
-        max (first (remove nil? (into #{} (map #(if (= (:name %) instance-type)
-                                                  (get-in % [:local-storage :max])
-                                                  nil) instance-types))))]
-    (assoc db :local-storage-max max)))
-
-(re-frame/reg-event-db
- ::set-local-storage-max
- set-local-storage-max)
-
 (defn-traced set-local-storage-size
   [db [_ value]]
-  (assoc-in db [:selection :local-storage-size] value))
+  (assoc-in db [:current-selection :local-storage-size] value))
 
 (re-frame/reg-event-db
  ::set-local-storage-size
@@ -176,7 +151,7 @@
 
 (defn-traced set-license
   [db [_ value]]
-  (assoc-in db [:selection :windows-license?] value))
+  (assoc-in db [:current-selection :windows-license?] value))
 
 (re-frame/reg-event-db
  ::set-license

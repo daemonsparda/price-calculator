@@ -3,7 +3,7 @@
                  [org.clojure/clojurescript "1.10.520"
                   :exclusions [com.google.javascript/closure-compiler-unshaded
                                org.clojure/google-closure-library]]
-                 [thheller/shadow-cljs "2.8.65"]
+                 [thheller/shadow-cljs "2.8.67"]
                  [reagent "0.8.1"]
                  [re-frame "0.10.9"]
                  [secretary "1.2.3"]
@@ -49,5 +49,4 @@
                    [day8.re-frame/re-frame-10x "0.4.4"]
                    [day8.re-frame/tracing "0.5.3"]]}
 
-   :prod { :dependencies [[day8.re-frame/tracing-stubs "0.5.3"]]}
-   })
+   :prod { :dependencies [[day8.re-frame/tracing-stubs "0.5.3"]]}})

@@ -91,3 +91,35 @@
           sut sut/set-instance-type]
       (is (= "data"
              (:instance-type (:current-selection (sut db event))))))))
+
+(deftest set-local-storage-size-test
+  (testing "Ensure local-storage-size is properly attached to db."
+    (let [db db/default-db
+          event [::set-local-storage-size "data"]
+          sut sut/set-local-storage-size]
+      (is (= "data"
+             (:local-storage-size (:current-selection (sut db event))))))))
+
+(deftest set-license-test
+  (testing "Ensure license is properly attached to db."
+    (let [db db/default-db
+          event [::set-license "data"]
+          sut sut/set-license]
+      (is (= "data"
+             (:windows-license? (:current-selection (sut db event))))))))
+
+(deftest set-currency-type-test
+  (testing "Ensure currency-type is properly attached to db."
+    (let [db db/default-db
+          event [::set-currency-type "data"]
+          sut sut/set-currency-type]
+      (is (= "data"
+             (:currency-type (sut db event)))))))
+
+(deftest add-selection-test
+  (testing "Ensure currency-type is properly attached to db."
+    (let [db db/default-db
+          event [::add-selection "data"]
+          sut sut/add-selection]
+      (is (= ["data"]             
+             (:selection-list (sut db event)))))))

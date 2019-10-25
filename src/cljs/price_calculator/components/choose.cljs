@@ -27,9 +27,7 @@
        [:input {:type "button"
                 :value instance-type
                 :class "btn"
-                :on-click #(do (rf/dispatch [::events/set-instance-type (-> % .-target .-value)])
-                               (rf/dispatch [::events/set-local-storage-min product-group-key instance-type])
-                               (rf/dispatch [::events/set-local-storage-max product-group-key instance-type]))}])]))
+                :on-click #(rf/dispatch [::events/set-instance-type (-> % .-target .-value)])}])]))
 
 (defn gpu-type
   []
@@ -37,8 +35,7 @@
    [:input {:type "button"
             :class "btn"
             :value "GPU2 (Tesla V100)"
-            :on-click #(do (rf/dispatch [::events/set-gpu-type (-> % .-target .-value)])
-                           (rf/dispatch [::events/set-gpu-type-key (-> % .-target .-value)]))}]
+            :on-click #(rf/dispatch [::events/set-gpu-type (-> % .-target .-value)])}]
    [:input {:type "button"
             :class "btn"
             :value "GPU (Tesla P100)"
@@ -48,7 +45,7 @@
   []
   (let [product-group-key @(rf/subscribe [::subs/product-group-key])
         gpu-type-key @(rf/subscribe [::subs/gpu-type-key])
-        gpu-instance-type-list @(rf/subscribe [::subs/gpu-instance-type-list product-group-key gpu-type-key])]
+        gpu-instance-type-list @(rf/subscribe [::subs/instance-type-list product-group-key gpu-type-key])]
     [:div "Choose an instance type:" [:strong @(rf/subscribe [::subs/instance-type])]
      (for [gpu-instance-type gpu-instance-type-list]
        ^{:key (str "gpu-instance-input-" gpu-instance-type)}
@@ -71,8 +68,11 @@
 
 (defn local-storage-size
   []
-  (let [min @(rf/subscribe [::subs/local-storage-min])
-        max @(rf/subscribe [::subs/local-storage-max])]
+  (let [product-group-key @(rf/subscribe [::subs/product-group-key])
+        instance-type @(rf/subscribe [::subs/instance-type])
+        range @(rf/subscribe [::subs/local-storage-range product-group-key instance-type])
+        min (:min range)
+        max (:max range)]
     [:div
      [:label {:for "local-storage-size"} (str "Choose local storage size(Between " min " GB and " max " GB):" )
       [:strong (str @(rf/subscribe [::subs/local-storage-size]))]]
@@ -82,10 +82,12 @@
               :max max
               :on-change #(rf/dispatch [::events/set-local-storage-size (-> % .-target .-value)])}] " GB"]))
 
-
 (defn currency-type
   []
   [:div "Choose your currency: "
    (for [value ["CHF" "EUR" "USD"]]
      ^{:key (str "button-currency-" value)}
-     [:input {:type "button" :class "btn-small" :value value :on-click #(rf/dispatch [::events/set-currency-type (-> % .-target .-value)])}])])
+     [:input {:type "button"
+              :class "btn-small"
+              :value value
+              :on-click #(rf/dispatch [::events/set-currency-type (-> % .-target .-value)])}])])
