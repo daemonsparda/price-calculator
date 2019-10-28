@@ -159,6 +159,31 @@
                {:class "list-group-item text-center"}
                [button value ::events/set-currency-type ::subs/currency-type]]))]]])
 
+(defn dns-package-information
+  []
+  (let [dns-package (rf/subscribe [::subs/dns-package])
+        currency-type (rf/subscribe [::subs/currency-type])
+        currency-symbol (case @currency-type
+                          "CHF" "₣"
+                          "EUR" "€"
+                          "USD" "$")]
+    (when-not (= "No" @dns-package)
+      [:div.container
+       (str "DNS Pricing is paid per month so it is not included in the total price. The monthly price for a "
+            @dns-package
+            " DNS package is "
+            currency-symbol
+            (if (= "EUR" @currency-type)
+              (case @dns-package
+                "Small" 1
+                "Medium" 5
+                "Large" 23)
+              (case @dns-package
+                      "Small" 1
+                      "Medium" 5
+                      "Large" 25))
+            ".00")])))
+
 (defn dns-package
   []
   [:div
@@ -168,27 +193,30 @@
           :aria-label "DNS Package"}
     (doall (for [value ["Small" "Medium" "Large" "No"]]
              ^{:key (str "btn-dns-" value)}
-             [button value ::events/set-dns-package ::subs/dns-package]))]])
+             [button value ::events/set-dns-package ::subs/dns-package]))]
+   [:p]
+   #_[dns-package-information]])
 
 (defn eip-address
   []
-  [:div
-   [:h5 "Do you require an Elastic IP Address?"]
-   [:div {:class "btn-group"
-          :role "group"
-          :aria-label "Elatic IP Address"}
-    (doall (for [value ["Yes" "No"]]
-             ^{:key (str "btn-eip-" value)}
-             [button value ::events/set-eip-address ::subs/eip-address]))]
-   (when (= "Yes" @(rf/subscribe [::subs/eip-address]))
-     [:div.row
-      [:div.col-sm-3
-       [:p]
-       [:h5 "How many?"]
-       [:input.form-control
-        {:type "number"
-         :name "eip-address-amount"
-         :on-change #(rf/dispatch [::events/set-eip-address-amount (-> % .-target .-value)])}]]])])
+  (let []
+    [:div
+     [:h5 "Do you require an Elastic IP Address?"]
+     [:div {:class "btn-group"
+            :role "group"
+            :aria-label "Elatic IP Address"}
+      (doall (for [value ["Yes" "No"]]
+               ^{:key (str "btn-eip-" value)}
+               [button value ::events/set-eip-address ::subs/eip-address]))]
+     (when (= "Yes" @(rf/subscribe [::subs/eip-address]))
+       [:div.row
+        [:div.col-sm-3
+         [:p]
+         [:h5 "How many?"]
+         [:input.form-control
+          {:type "number"
+           :name "eip-address-amount"
+           :on-change #(rf/dispatch [::events/set-eip-address-amount (-> % .-target .-value)])}]]])]))
 
 (defn custom-templates
   []

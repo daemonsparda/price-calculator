@@ -104,8 +104,7 @@
   [{:keys [db]} _]
   {:db (assoc db :show-loading-screen true)
    :http-xhrio {:method :get
-                :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/sos.json
-"
+                :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/sos.json"
                 :timeout 8000
                 :response-format (ajax/json-response-format {:keywords? true})
                 :on-success [::fetch-object-storage-pricing-success]
@@ -116,20 +115,34 @@
  fetch-object-storage-pricing)
 
 ;; Selection Events
-;; convert event to an fx event
+;; TODO: convert event to an fx event
 (defn-traced set-product-group
-  [db [_ value]]
-  (if (= "Additional Features" value)
-    (doall
-      
-     (assoc db :additional-features (:additional-features db))
-     (assoc-in db [:current-selection :product-group] value)
-     )
-    (assoc-in db [:current-selection :product-group] value)))
+  [{:keys [db]} [_ value]]
+  {:db (assoc-in db [:current-selection :product-group] value)
+   :dispatch (if (= "Additional Features" value)
+               [::retrieve-additional-features value]
+               [::do-nothing])})
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  ::set-product-group
  set-product-group)
+
+(defn-traced do-nothing
+  [db [_ value]]
+  db)
+
+(re-frame/reg-event-db
+ ::do-nothing
+ do-nothing)
+
+(defn-traced retrieve-additional-features
+  [db [_ value]]
+  (assoc db :current-selection
+         (assoc (:additional-features db) :product-group value)))
+
+(re-frame/reg-event-db
+ ::retrieve-additional-features
+ retrieve-additional-features)
 
 (defn-traced set-gpu-type
   [db [_ value]]
@@ -190,13 +203,19 @@
 (defn-traced add-selection
   [db [_ value]]
   (let [selection-list (:selection-list db)]
-    (if (= "Additional Features" (:product-group value))
-      (assoc db :additional-features value)
-      (assoc db :selection-list (conj selection-list value)))))
+    (assoc db :selection-list (conj selection-list value))))
 
 (re-frame/reg-event-db
  ::add-selection
  add-selection)
+
+(defn-traced add-features
+  [db [_ value]]
+  (assoc db :additional-features value))
+
+(re-frame/reg-event-db
+ ::add-features
+ add-features)
 
 (defn-traced set-dns-package
   [db [_ value]]

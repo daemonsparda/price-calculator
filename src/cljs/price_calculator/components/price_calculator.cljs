@@ -17,7 +17,9 @@
      [:input {:type "button"
               :value "Add Selection"
               :class "btn btn-outline-danger"
-              :on-click #(rf/dispatch [::events/add-selection selection])}]]))
+              :on-click #(if (= "Additional Features" (:product-group selection))
+                           (rf/dispatch [::events/add-features selection])
+                           (rf/dispatch [::events/add-selection selection]))}]]))
 
 (defn json-visualizer [licenses open-compute sos]
   [:div
@@ -47,7 +49,7 @@
      [:td (:instance-type selection)]
      [:td (or (:gpu-type selection) "N/A")]
      [:td (:local-storage-size selection)]
-     [:td (:snapshot-amount selection)]
+     [:td (or (:snapshot-amount selection) "N/A")]
      [:td (:windows-license? selection)]]))
 
 (defn selections
@@ -74,20 +76,17 @@
 
 (defn additional-feature-selection-row
   [selection]
-  (let []
-    [:tr
-     [:td (:dns-package selection)]
-     [:td (:eip-address-amount selection)]
-     [:td (:custom-template-zones selection)]
-     [:td (:custom-template-size selection)]
-     [:td (:object-storage-amount selection)]]))
+  [:tr
+   [:td (:dns-package selection)]
+   [:td (or (:eip-address-amount selection) "N/A")]
+   [:td (or (:custom-template-zones selection) "N/A")]
+   [:td (or (:custom-template-size selection) "N/A")]
+   [:td (or (:object-storage-size selection) "N/A")]])
 
 (defn additional-feature-selections
-  [selection-list]
+  [selection]
   [:tbody
-   (for [selection selection-list]
-     ^{:key (str "add-feature-selection-" (rand 300))} ;; Eww, eventually we'll get the same number here D:
-     [additional-feature-selection-row selection])])
+   [additional-feature-selection-row selection]])
 
 (defn additional-features-selection-table
   []
@@ -106,6 +105,7 @@
 (defn price-calculator []
   (let [product-group-key @(rf/subscribe [::subs/product-group-key])
         selection-list @(rf/subscribe [::subs/selection-list])
+        additional-features @(rf/subscribe [::subs/additional-features])
         currency-type @(rf/subscribe [::subs/currency-type])
         license-win-price (rf/subscribe [::subs/license-win])
         compute-pricing (rf/subscribe [::subs/compute-pricing])
@@ -118,6 +118,7 @@
       [:h5 (str "Total price: "
                (calc/calculate-total
                 selection-list
+                additional-features
                 currency-type
                 @compute-pricing
                 @license-win-price

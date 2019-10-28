@@ -15,42 +15,6 @@
      [:h1 (str @name " Assessment")]
      [:a {:href "#/lets-get-started"} "Let's get started"]]))
 
-;; should only have the price calculator at the end of the project.
-;; this should be deleted at some point
-(defn lets-get-started [] 
-  [:div
-   [:h1 "Let's get started"]
-   [pc/price-calculator]
-   [:div
-    [:a {:href "#/"}
-     "Return to Home Page"]]])
-
-(defn product-group [] 
-  [:div
-   [:h1 "Let's get started"]
-   [pc/price-calculator]
-   [:div
-    [:a {:href "#/"}
-     "Return to Home Page"]]])
-
-(defn gpu-type [] 
-  [:div
-   [:h1 "Let's get started"]
-   [pc/price-calculator]
-   [:div
-    [:a {:href "#/"}
-     "Return to Home Page"]]])
-
-(defn instance-type [] 
-  [:div
-   [:h1 "Let's get started"]
-   [pc/price-calculator]
-   [:div
-    [:a {:href "#/"}
-     "Return to Home Page"]]])
-(defn local-storage-size [] 
-  [:div])
-
 (defn additional-features [] 
   [:div
    [choose/dns-package]
@@ -64,9 +28,12 @@
 (defn price-calculator []
   [:div.container
    [:div {:class "px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center"}
-    [:div {:class "display-4"} "Price Calculator Assessment"
-     [:p {:class "lead"} "You can find more information about Exoscale products at "
-      [:a {:href "https://www.exoscale.com/pricing/"} "https://www.exoscale.com/pricing/"]]]]
+    [:div {:class "display-4"}
+     "Price Calculator Assessment"
+     [:p {:class "lead"}
+      "You can find more information about Exoscale products at "
+      [:a {:href "https://www.exoscale.com/pricing/"}
+       "https://www.exoscale.com/pricing/"]]]]
    [choose/product-group]
    [:p]
    (if (= :additional-features @(rf/subscribe [::subs/product-group-key]))

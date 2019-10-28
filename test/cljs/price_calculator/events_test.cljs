@@ -74,7 +74,7 @@
           event [::set-product-group "data"]
           sut sut/set-product-group]
       (is (= "data"
-             (:product-group (:current-selection (sut db event))))))))
+             (:product-group (:current-selection (:db (sut db event)))))))))
 
 (deftest set-gpu-type-test
   (testing "Ensure gpu-type is properly attached to db."

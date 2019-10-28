@@ -1,4 +1,0 @@
-(ns price-calculator.events-test
-  (:require [price-calculator.events :as sut]
-            [cljs.test :as t :include-macros true]))
-

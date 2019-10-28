@@ -261,25 +261,54 @@
                            local-storage-size
                            currency-fn))))))
 
+(deftest calculate-eip-address-price-test
+  (testing "Ensure that Elastic IP cost is properly calculated"
+    (let [sut sut/calculate-eip-address-price
+          additional-features {:eip-address "Yes"
+                               :eip-address-amount 3}
+          compute-pricing {:eip_address "0.01389000"}
+          expected 0.04167]
+      (is (= expected (sut additional-features compute-pricing))))))
+
+(deftest calculate-template-price-test
+  (testing "Ensure that template cost is properly calculated"
+    (let [sut sut/calculate-template-price
+          additional-features {:custom-template "Yes"
+                               :custom-template-zones 3
+                               :custom-template-size 10}
+          compute-pricing {:template "0.00139000"}
+          expected 0.0417]
+      (is (= expected (sut additional-features compute-pricing))))))
+
+(deftest calculate-object-storage-price-test
+  (testing "Ensure that object storage cost is properly calculated"
+    (let [sut sut/calculate-object-storage-price
+          additional-features {:object-storage "Yes"
+                               :object-storage-size 1000}
+          object-storage-pricing {:storage_volume "0.00002750"}
+          expected 0.0275]
+      (is (= expected (sut additional-features object-storage-pricing))))))
+
 (deftest calculate-additional-features-cost-test
   (testing "Ensure that additional features cost is properly calculated"
     (let [sut sut/calculate-additional-features-cost
-          selection {:snapshot-sizes [100 200 200 235 1600]
-                     :eip-address 3
-                     :template-sizes [10 15]}
-          compute-pricing {:snapshot "0.1"
-                           :eip_address "0.1"
-                           :template "0.1"}
-          expected 236.3]
-      (is (= expected (sut selection compute-pricing))))))
-
-(deftest calculate-object-storage-cost-test
-  (testing "Ensure that object storage cost is properly calculated"
-    (let [sut sut/calculate-object-storage-cost
-          selection {:object-storage-size 1000}
+          additional-features {:product-group "Additional Features"
+                               :eip-address "Yes"
+                               :eip-address-amount 3
+                               :custom-template "Yes"
+                               :custom-template-zones 2
+                               :custom-template-size 10
+                               :object-storage "Yes"
+                               :object-storage-size 200}
+          compute-pricing {:eip_address "0.01389000"
+                           :template "0.00139000"}
           object-storage-pricing {:storage_volume "0.00002750"}
-          expected 0.0275]
-      (is (= expected (sut selection object-storage-pricing))))))
+          currency-fn (fn [x] x)
+          expected 0.07497]
+      (is (= expected (sut additional-features
+                           compute-pricing
+                           object-storage-pricing
+                           currency-fn))))))
 
 (deftest calculate-product-cost-std-micro-windows-10GB-CHF-test
   (testing "Standard Instance: MICRO with windows license with 10GB of storage in CHF."
@@ -499,6 +528,7 @@
                                   :storage_traffic "0.02000000"}
           expected "₣0.00000"]
       (is (= expected (sut selection-list
+                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -515,6 +545,7 @@
                                   :storage_traffic "0.02000000"}
           expected "€0.00000"]
       (is (= expected (sut selection-list
+                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -531,6 +562,7 @@
                                   :storage_traffic "0.02000000"}
           expected "$0.00000"]
       (is (= expected (sut selection-list
+                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -567,6 +599,7 @@
                                   :storage_traffic "0.02000000"}
           expected "₣6.57272"]
       (is (= expected (sut selection-list
+                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -578,32 +611,38 @@
           selection-list [{:product-group "Standard Instances"
                            :instance-type "MEDIUM"
                            :local-storage-size 100
-                           :windows-license? "No"}
+                           :windows-license? "No"
+                           :snapshot "Yes"
+                           :snapshot-amount 1}
                           {:product-group "Standard Instances"
                            :instance-type "MEDIUM"
                            :local-storage-size 200
-                           :windows-license? "Yes"}
+                           :windows-license? "Yes"
+                           :snapshot "Yes"
+                           :snapshot-amount 2}
                           {:product-group "Standard Instances"
                            :instance-type "MEDIUM"
                            :local-storage-size 235
-                           :windows-license? "Yes"}
+                           :windows-license? "Yes"
+                           :snapshot "Yes"
+                           :snapshot-amount 1}
                           {:product-group "GPU Instances"
                            :instance-type "HUGE"
                            :local-storage-size 1600
                            :windows-license? "No"
-                           :gpu-type :gpu2}
-                          {:product-group "Additional Features"
-                           :snapshot-sizes [100 200 200 235 1600]
-                           :eip-address "Yes"
-                           :eip-address-amount 3
-                           :custom-template "Yes"
-                           :custom-template-zones 1
-                           :custom-template-size 10
-                           :traffic ""
-                           :traffic-free ""
-                           :dns-package "Small"
-                           :object-storage "Yes"
-                           :object-storage-size 2000}]
+                           :gpu-type :gpu2
+                           :snapshot "Yes"
+                           :snapshot-amount 1}]
+          additional-features {:product-group "Additional Features"
+                               :eip-address "Yes"
+                               :eip-address-amount 3
+                               :custom-template "Yes"
+                               :custom-template-zones 1
+                               :custom-template-size 10
+                               :traffic ""
+                               :traffic-free ""                               
+                               :object-storage "Yes"
+                               :object-storage-size 2000}
           currency-type "CHF"
           compute-pricing {:running_medium "0.04444000"
                            :running_gpu2_huge "3.31944000"
@@ -615,8 +654,11 @@
           license-win-price "0.01111000"
           object-storage-pricing {:storage_volume "0.00002750"
                                   :storage_traffic "0.02000000"}
-          expected "₣5.21135"]
+          expected "₣3.81625"]
       (is (= expected (sut selection-list
+                           {:product-group "Additional Features"
+                            :eip-address "Yes"
+                            :eip-address-amount 3}; additional-features
                            currency-type
                            compute-pricing
                            license-win-price
