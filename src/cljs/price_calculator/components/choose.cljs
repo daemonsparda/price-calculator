@@ -3,91 +3,240 @@
             [price-calculator.events :as events]
             [price-calculator.subs :as subs]))
 
+(defn product-group-information
+  []
+  (case @(rf/subscribe [::subs/product-group])
+       "Standard Instances"
+       [:div.card
+        [:div.card-body
+         [:h6.card-title "Standard Instances"]
+         [:p.card-text "Machines with a balanced mix of CPU cores, RAM and SSD local storage, covering a variety of use cases and allowing you to implement your architecture. From simple web hosting up to specialized Database host, from Continuous Integration server up to large Data Lakes, you can scale and combine Standard Instances to fit your application needs."]]]
 
-(defn product-group [product-group-list]
+       "Storage Optimized Instances"
+       [:div.card
+        [:div.card-body
+         [:h6.card-title "Storage Optimized Instances"]
+         [:p.card-text "Designed to cover the needs of data-hungry applications requiring to store and access large amounts of data on a reliable local storage, Storage Optimized Instances have the same mix of CPU and RAM than our Standard Instances, but make use of larger and more capable SSD hard drives, greatly expanding the overall data capacity."]]]
+
+       "GPU Instances"
+       [:div.card
+        [:div.card-body
+         [:h6.card-title "GPU Instances"]
+         [:p.card-text "GPU virtual machines that provide up to 4 dedicated NVIDIA graphic cards to perform Machine/Deep learning, high performance computing, and all sort of intensive computation more efficiently than on Standard Instances."]]]
+
+       "Additional Features"
+       [:div.card
+        [:div.card-body
+         [:h6.card-title "Additional Features"]
+         [:p.card-text "Features and additional services to build up your architecture such as: Bandwidth, Elastic IP, Snapshots, Custom Templates"]]]
+
+       nil))
+
+(defn button
+  [text event subscription]
+  [:button {:type "button"
+            :class (str "btn btn-danger " (if (= text @(rf/subscribe [subscription]))
+                                            "active"
+                                            nil))
+            :on-click #(rf/dispatch [event text])}
+   text])
+
+(defn product-group
+  []
   (let [product-group-list @(rf/subscribe [::subs/product-group-list])]
     [:div
-     [:label {:for "product-group"} "First let's choose a product type: "
-      [:strong (str @(rf/subscribe [::subs/product-group]))]]
-     (for [product-group product-group-list]
-       ^{:key (str "product-group-" product-group)}
-       [:input {:type "button"
-                :value product-group
-                :class "btn"
-                :on-click #(rf/dispatch [::events/set-product-group (-> % .-target .-value)])}])]))
+     [:h5 "Please choose a product you'd like to add to your list."]
+     [:div {:class "btn-group"
+            :role "group"
+            :aria-label "Product Groups"}
+      (doall (for [product-group product-group-list]
+               ^{:key (str "product-group-" product-group)}
+               [button product-group ::events/set-product-group ::subs/product-group]))]
+     [product-group-information]]))
 
 (defn instance-type
   [product-group-key]
   (let [instance-type-list @(rf/subscribe [::subs/instance-type-list product-group-key])]
     [:div
-     [:label {:for "instance-type"} "Choose an instance type: "
-      [:strong (str @(rf/subscribe [::subs/instance-type]))]]
-     (for [instance-type instance-type-list]
-       ^{:key (str "instance-type-" instance-type)}
-       [:input {:type "button"
-                :value instance-type
-                :class "btn"
-                :on-click #(rf/dispatch [::events/set-instance-type (-> % .-target .-value)])}])]))
+     [:h5 "Choose an instance type"]
+     [:div {:class "btn-group"
+            :role "group"
+            :aria-label "Instance Types"}
+      (doall (for [instance-type instance-type-list]
+               ^{:key (str "instance-type-" instance-type)}
+               [button instance-type ::events/set-instance-type ::subs/instance-type]))]]))
+
+(defn gpu-type-information
+  []
+  (case @(rf/subscribe [::subs/gpu-type])
+    "GPU2 (Tesla V100)"
+    [:div.card
+     [:div.card-body
+      [:h6.card-title "GPU2 (Tesla V100)"]
+      [:p.card-text "Nearly the double of single precision and double precision teraflops compared to the P100, and 640 dedicated Tensor Cores to train AI models that would consume weeks of computing resources in a few days."]]]
+
+    "GPU (Tesla P100)"
+    [:div.card
+     [:div.card-body
+      [:h6.card-title "GPU (Tesla P100)"]
+      [:p.card-text "An affordable solution to enter the HPC world, with no cost of acquisition and a dramatically reduced cost of ownership."]]]
+
+    nil))
 
 (defn gpu-type
-  []
-  [:div "Choose the type of GPU:" [:strong @(rf/subscribe [::subs/gpu-type])]
-   [:input {:type "button"
-            :class "btn"
-            :value "GPU2 (Tesla V100)"
-            :on-click #(rf/dispatch [::events/set-gpu-type (-> % .-target .-value)])}]
-   [:input {:type "button"
-            :class "btn"
-            :value "GPU (Tesla P100)"
-            :on-click #(rf/dispatch [::events/set-gpu-type (-> % .-target .-value)])}]])
-
-(defn gpu-instance-type
-  []
-  (let [product-group-key @(rf/subscribe [::subs/product-group-key])
-        gpu-type-key @(rf/subscribe [::subs/gpu-type-key])
-        gpu-instance-type-list @(rf/subscribe [::subs/instance-type-list product-group-key gpu-type-key])]
-    [:div "Choose an instance type:" [:strong @(rf/subscribe [::subs/instance-type])]
-     (for [gpu-instance-type gpu-instance-type-list]
-       ^{:key (str "gpu-instance-input-" gpu-instance-type)}
-       [:input {:type "button"
-                :value gpu-instance-type
-                :class "btn"
-                :on-click #(rf/dispatch [::events/set-instance-type (-> % .-target .-value)])}])]))
+  [product-group-key]
+  (when (= :gpu-instances product-group-key)
+    (let [gpu2 "GPU2 (Tesla V100)"
+          gpu "GPU (Tesla P100)"]
+      [:div
+       [:h5 "There are two types of GPU Instances, which one would you prefer?"]
+       [:div {:class "btn-group"
+              :role "group"
+              :aria-label "Instance Types"}
+        [button gpu2 ::events/set-gpu-type ::subs/gpu-type]
+        [button gpu ::events/set-gpu-type ::subs/gpu-type]]
+       [gpu-type-information]])))
 
 (defn license
   []
-  [:div "Do you require a Windows Instance?"
-   [:input {:type "button"
-            :class "btn"
-            :value "Yes"
-            :on-click #(rf/dispatch [::events/set-license (-> % .-target .-value)])}]
-   [:input {:type "button"
-            :class "btn"
-            :value "No"
-            :on-click #(rf/dispatch [::events/set-license (-> % .-target .-value)])}]])
+  [:div
+   [:h5 "Do you require a Windows Instance?"]
+   [:div {:class "btn-group"
+          :role "group"
+          :aria-label "Instance Types"}
+    (for [value ["Yes" "No"]]
+      ^{:key (str "windows-license-" value)}      
+      [button value ::events/set-license ::subs/windows-license?])]])
 
 (defn local-storage-size
-  []
+  [product-group-key]
   (let [product-group-key @(rf/subscribe [::subs/product-group-key])
         instance-type @(rf/subscribe [::subs/instance-type])
         range @(rf/subscribe [::subs/local-storage-range product-group-key instance-type])
         min (:min range)
         max (:max range)]
     [:div
-     [:label {:for "local-storage-size"} (str "Choose local storage size(Between " min " GB and " max " GB):" )
-      [:strong (str @(rf/subscribe [::subs/local-storage-size]))]]
-     [:input {:type "number"
-              :name "local-storage-size"
-              :min min
-              :max max
-              :on-change #(rf/dispatch [::events/set-local-storage-size (-> % .-target .-value)])}] " GB"]))
+     [:h5 (str "Choose local storage size for your instance (Between " min " GB and " max " GB):")]
+     [:div.container.row
+      [:input.form-control.col-sm-2
+       {:type "number"
+        :name "local-storage-size"
+        :min min
+        :max max
+        :on-change #(rf/dispatch [::events/set-local-storage-size (-> % .-target .-value)])}]]]))
+
+(defn snapshot
+  []
+  [:div
+   [:h5 "Will you need a snapshot of this local storage?"]
+   [:div {:class "btn-group"
+          :role "group"
+          :aria-label "Snapshots"}
+    (doall (for [value ["Yes" "No"]]
+             ^{:key (str "btn-eip-" value)}
+             [button value ::events/set-snapshot ::subs/snapshot]))]
+   (when (= "Yes" @(rf/subscribe [::subs/snapshot]))
+     [:div.row
+      [:div.col-sm-3
+       [:p]
+       [:h5 "How many?"]
+       [:input.form-control
+        {:type "number"
+         :name "snapshot-amount"
+         :on-change #(rf/dispatch [::events/set-snapshot-amount (-> % .-target .-value)])}]]])])
 
 (defn currency-type
   []
-  [:div "Choose your currency: "
-   (for [value ["CHF" "EUR" "USD"]]
-     ^{:key (str "button-currency-" value)}
-     [:input {:type "button"
-              :class "btn-small"
-              :value value
-              :on-click #(rf/dispatch [::events/set-currency-type (-> % .-target .-value)])}])])
+  [:div {:style {:position "fixed"
+                 :right "15px"
+                 :top "15px"}}
+   [:div.card
+    [:h5.card-header "Choose your currency:"]
+    [:ul.list-group.list-group-flush
+     (doall (for [value ["CHF" "EUR" "USD"]]
+              ^{:key (str "btn-currency-" value)}
+              [:li
+               {:class "list-group-item text-center"}
+               [button value ::events/set-currency-type ::subs/currency-type]]))]]])
+
+(defn dns-package
+  []
+  [:div
+   [:h5 "Do you require a DNS Package?"]
+   [:div {:class "btn-group"
+          :role "group"
+          :aria-label "DNS Package"}
+    (doall (for [value ["Small" "Medium" "Large" "No"]]
+             ^{:key (str "btn-dns-" value)}
+             [button value ::events/set-dns-package ::subs/dns-package]))]])
+
+(defn eip-address
+  []
+  [:div
+   [:h5 "Do you require an Elastic IP Address?"]
+   [:div {:class "btn-group"
+          :role "group"
+          :aria-label "Elatic IP Address"}
+    (doall (for [value ["Yes" "No"]]
+             ^{:key (str "btn-eip-" value)}
+             [button value ::events/set-eip-address ::subs/eip-address]))]
+   (when (= "Yes" @(rf/subscribe [::subs/eip-address]))
+     [:div.row
+      [:div.col-sm-3
+       [:p]
+       [:h5 "How many?"]
+       [:input.form-control
+        {:type "number"
+         :name "eip-address-amount"
+         :on-change #(rf/dispatch [::events/set-eip-address-amount (-> % .-target .-value)])}]]])])
+
+(defn custom-templates
+  []
+  [:div
+   [:h5 "Do you require any custom templates?"]
+   [:div {:class "btn-group"
+          :role "group"
+          :aria-label "DNS Package"}]
+   (doall (for [value ["Yes" "No"]]
+            ^{:key (str "btn-eip-" value)}
+            [button value ::events/set-custom-template ::subs/custom-template]))
+   (when (= "Yes" @(rf/subscribe [::subs/custom-template]))
+     [:div.row
+      [:div.col-sm-3
+       [:p]
+       [:h5 "What size? (in GB)"]
+       [:input.form-control
+        {:type "number"
+         :name "custom-template-size"
+         :min 0
+         :on-change #(rf/dispatch [::events/set-custom-template-size (-> % .-target .-value)])}]]
+      [:div.col-sm-3
+       [:p]
+       [:h5 "In how many zones?"]
+       [:input.form-control
+        {:type "number"
+         :name "custom-template-zones"
+         :min 0
+         :on-change #(rf/dispatch [::events/set-custom-template-zones (-> % .-target .-value)])}]]])])
+
+(defn object-storage
+  []
+  [:div
+   [:h5 "Do you require object storage(S3)"]
+   [:div {:class "btn-group"
+          :role "group"
+          :aria-label "Object Storage"}]
+   (doall (for [value ["Yes" "No"]]
+            ^{:key (str "btn-eip-" value)}
+            [button value ::events/set-object-storage ::subs/object-storage]))
+   (when (= "Yes" @(rf/subscribe [::subs/object-storage]))
+     [:div.row
+      [:div.col-sm-3
+       [:p]
+       [:h5 "What size? (in GB)"]
+       [:input.form-control
+        {:type "number"
+         :name "object-storage-size"
+         :min 0
+         :on-change #(rf/dispatch [::events/set-object-storage-size (-> % .-target .-value)])}]]])])
+

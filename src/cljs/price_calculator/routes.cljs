@@ -23,9 +23,11 @@
   (defroute "/" []
     (re-frame/dispatch [::events/set-active-panel :home-panel]))
 
-  (defroute "/lets-get-started" []
-    (re-frame/dispatch [::events/set-active-panel :lets-get-started]))
+  (defroute "/choose-instance" []
+    (re-frame/dispatch [::events/set-active-panel :choose-instance]))
 
+  (defroute "/price-calculator" []
+    (re-frame/dispatch [::events/set-active-panel :price-calculator]))
 
   ;; --------------------
   (hook-browser-navigation!))

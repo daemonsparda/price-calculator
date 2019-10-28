@@ -2,7 +2,7 @@
 
 (def default-db
   {:name "Price Calculator"
-   :current-selection {}
+   :current-selection {:product-group "Standard Instances"}
    :selection-list []
    :currency-type "CHF"
    :product-groups {:standard-instances

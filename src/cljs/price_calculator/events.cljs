@@ -116,10 +116,16 @@
  fetch-object-storage-pricing)
 
 ;; Selection Events
-
+;; convert event to an fx event
 (defn-traced set-product-group
   [db [_ value]]
-  (assoc-in db [:current-selection :product-group] value))
+  (if (= "Additional Features" value)
+    (doall
+      
+     (assoc db :additional-features (:additional-features db))
+     (assoc-in db [:current-selection :product-group] value)
+     )
+    (assoc-in db [:current-selection :product-group] value)))
 
 (re-frame/reg-event-db
  ::set-product-group
@@ -149,6 +155,22 @@
  ::set-local-storage-size
  set-local-storage-size)
 
+(defn-traced set-snapshot
+  [db [_ value]]
+  (assoc-in db [:current-selection :snapshot] value))
+
+(re-frame/reg-event-db
+ ::set-snapshot
+ set-snapshot)
+
+(defn-traced set-snapshot-amount
+  [db [_ value]]
+  (assoc-in db [:current-selection :snapshot-amount] value))
+
+(re-frame/reg-event-db
+ ::set-snapshot-amount
+ set-snapshot-amount)
+
 (defn-traced set-license
   [db [_ value]]
   (assoc-in db [:current-selection :windows-license?] value))
@@ -168,8 +190,74 @@
 (defn-traced add-selection
   [db [_ value]]
   (let [selection-list (:selection-list db)]
-       (assoc db :selection-list (conj selection-list value))))
+    (if (= "Additional Features" (:product-group value))
+      (assoc db :additional-features value)
+      (assoc db :selection-list (conj selection-list value)))))
 
 (re-frame/reg-event-db
  ::add-selection
  add-selection)
+
+(defn-traced set-dns-package
+  [db [_ value]]
+  (assoc-in db [:current-selection :dns-package] value))
+
+(re-frame/reg-event-db
+ ::set-dns-package
+ set-dns-package)
+
+(defn-traced set-eip-address
+  [db [_ value]]
+  (assoc-in db [:current-selection :eip-address] value))
+
+(re-frame/reg-event-db
+ ::set-eip-address
+ set-eip-address)
+ 
+(defn-traced set-eip-address-amount
+  [db [_ value]]
+  (assoc-in db [:current-selection :eip-address-amount] value))
+
+(re-frame/reg-event-db
+ ::set-eip-address-amount
+ set-eip-address-amount)
+
+(defn-traced set-custom-template
+  [db [_ value]]
+  (assoc-in db [:current-selection :custom-template] value))
+
+(re-frame/reg-event-db
+ ::set-custom-template
+ set-custom-template)
+
+(defn-traced set-custom-template-size
+  [db [_ value]]
+  (assoc-in db [:current-selection :custom-template-size] value))
+
+(re-frame/reg-event-db
+ ::set-custom-template-size
+ set-custom-template-size)
+
+(defn-traced set-custom-template-zones
+  [db [_ value]]
+  (assoc-in db [:current-selection :custom-template-zones] value))
+
+(re-frame/reg-event-db
+ ::set-custom-template-zones
+ set-custom-template-zones)
+
+(defn-traced set-object-storage
+  [db [_ value]]
+  (assoc-in db [:current-selection :object-storage] value))
+
+(re-frame/reg-event-db
+ ::set-object-storage
+ set-object-storage)
+
+(defn-traced set-object-storage-size
+  [db [_ value]]
+  (assoc-in db [:current-selection :object-storage-size] value))
+
+(re-frame/reg-event-db
+ ::set-object-storage-size
+ set-object-storage-size)

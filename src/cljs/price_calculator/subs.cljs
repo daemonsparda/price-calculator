@@ -70,6 +70,16 @@
 
 ;; Selection
 (rf/reg-sub
+ ::additional-features
+ (fn [db _]
+   (:additional-features db)))
+
+(rf/reg-sub
+ ::current-selection
+ (fn [db _]
+   (:current-selection db)))
+
+(rf/reg-sub
  ::product-group
  (fn [db _]
    (get-in db [:current-selection :product-group] "Standard Instances")))
@@ -102,6 +112,16 @@
    (get-in db [:current-selection :local-storage-size])))
 
 (rf/reg-sub
+ ::snapshot
+ (fn [db _]
+   (get-in db [:current-selection :snapshot])))
+
+(rf/reg-sub
+ ::snapshot-amount
+ (fn [db _]
+   (get-in db [:current-selection :snapshot-amount])))
+
+(rf/reg-sub
  ::windows-license?
  (fn [db _]
    (get-in db [:current-selection :windows-license?])))
@@ -123,3 +143,43 @@
  ::selection-list
  (fn [db _]
    (:selection-list db)))
+
+(rf/reg-sub
+ ::dns-package
+ (fn [db _]
+   (get-in db [:current-selection :dns-package] "")))
+
+(rf/reg-sub
+ ::eip-address
+ (fn [db _]
+   (get-in db [:current-selection :eip-address] "")))
+
+(rf/reg-sub
+ ::eip-address-amount
+ (fn [db _]
+   (get-in db [:current-selection :eip-address-amount] "")))
+
+(rf/reg-sub
+ ::custom-template
+ (fn [db _]
+   (get-in db [:current-selection :custom-template] "")))
+
+(rf/reg-sub
+ ::custom-template-size
+ (fn [db _]
+   (get-in db [:current-selection :custom-template-size] "")))
+
+(rf/reg-sub
+ ::custom-template-zones
+ (fn [db _]
+   (get-in db [:current-selection :custom-template-zones] "")))
+
+(rf/reg-sub
+ ::object-storage
+ (fn [db _]
+   (get-in db [:current-selection :object-storage] "")))
+
+(rf/reg-sub
+ ::object-storage-size
+ (fn [db _]
+   (get-in db [:current-selection :object-storage-size] "")))
