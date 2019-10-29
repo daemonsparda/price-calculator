@@ -1,6 +1,6 @@
 # price-calculator
 
-A [re-frame](https://github.com/day8/re-frame) application designed to ... well, that part is up to you.
+A [re-frame](https://github.com/day8/re-frame) application designed to calculate Exoscale pricing.
 
 ## Development Mode
 
@@ -27,6 +27,7 @@ lein garden auto
 ### Run application:
 
 ```
+npm install
 lein clean
 lein dev
 ```
