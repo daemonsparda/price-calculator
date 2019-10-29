@@ -36,7 +36,7 @@
 (rf/reg-sub
  ::object-storage-pricing
  (fn [db _]
-    (get-in db [:http :success :object-storage-pricing-result :chf])))
+   (get-in db [:http :success :object-storage-pricing-result :chf])))
 
 ;; Options
 (defn product-group-list
@@ -53,9 +53,16 @@
 
 (defn instance-type-list
   [db [_ selected-product-group]]
-  (if (= selected-product-group :gpu-instances)
+  (case selected-product-group
+    :gpu-instances
     (for [instance-type (get-in db [:product-groups selected-product-group :gpu2 :instance-types])]
       (:name instance-type))
+
+    :storage-optimized-instances
+    (for [instance-type (get-in db [:product-groups selected-product-group :instance-types])]
+      (:name instance-type))
+
+    :standard-instances
     (for [instance-type (get-in db [:product-groups selected-product-group :instance-types])]
       (:name instance-type))))
 
@@ -87,8 +94,8 @@
 (rf/reg-sub
  ::product-group-key
  (fn [db _]
-  (let [product-group-key (csk/->kebab-case-keyword @(rf/subscribe [::product-group]))]
-    product-group-key)))
+   (let [product-group-key (csk/->kebab-case-keyword @(rf/subscribe [::product-group]))]
+     product-group-key)))
 
 (rf/reg-sub
  ::instance-type
@@ -130,10 +137,10 @@
   (let [instance-types (if (= product-group-key :gpu-instances)
                          (get-in db [:product-groups product-group-key :gpu2 :instance-types])
                          (get-in db [:product-groups product-group-key :instance-types]))
-         range (first (remove nil? (set (map #(when (= (:name %) instance-type)
-                                                (get % :local-storage))
-                                             instance-types))))]
-     range))
+        range (first (remove nil? (set (map #(when (= (:name %) instance-type)
+                                               (get % :local-storage))
+                                            instance-types))))]
+    range))
 
 (rf/reg-sub
  ::local-storage-range
@@ -148,6 +155,29 @@
  ::dns-package
  (fn [db _]
    (get-in db [:current-selection :dns-package] "")))
+
+(rf/reg-sub
+ ::dns-package-price
+ (fn [db _]
+   (let [dns-package (get-in db [:current-selection :dns-package] "No")
+         currency-type (get db :currency-type "CHF")
+         currency-symbol (case currency-type
+                           "CHF" "₣"
+                           "EUR" "€"
+                           "USD" "$")]
+     (when-not (= "No" dns-package)
+       (str "DNS package: " currency-symbol
+            (if (= "EUR" currency-type)
+              (case dns-package
+                "Small" 1
+                "Medium" 5
+                "Large" 23)
+              (case dns-package
+                "Small" 1
+                "Medium" 5
+                "Large" 25))
+            "/month")))))
+
 
 (rf/reg-sub
  ::eip-address

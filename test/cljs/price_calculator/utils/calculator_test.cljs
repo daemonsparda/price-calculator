@@ -216,20 +216,47 @@
                            local-storage-size
                            currency-fn))))))
 
-(deftest calculate-compute-cost-std-micro-windows-100GB-test
-  (testing "Standard Instance: MICRO with windows license with 100GB of storage."
+(deftest calculate-compute-cost-std-micro-windows-100GB-snapshot-test
+  (testing "Standard Instance: MICRO with windows license with 100GB of storage and a snapshot."
     (let [sut sut/calculate-compute-cost
           instance-price "0.00694000"
           license-win-price "0.01111000"
           local-storage-price "0.00014000"
           local-storage-size 100
-          expected "0.03205"
-          currency-fn (fn [x] x)]
+          currency-fn (fn [x] x)
+          snapshot-price "0.00014000"
+          snapshot "Yes"
+          snapshot-amount 1
+          expected "0.04605"]
       (is (= expected (sut instance-price
                            license-win-price
                            local-storage-price
                            local-storage-size
-                           currency-fn))))))
+                           currency-fn
+                           snapshot-price
+                           snapshot
+                           snapshot-amount))))))
+
+(deftest calculate-compute-cost-std-micro-windows-100GB-multiple-snapshots-test
+  (testing "Standard Instance: MICRO with windows license with 100GB of storage and multiple snapshots."
+    (let [sut sut/calculate-compute-cost
+          instance-price "0.00694000"
+          license-win-price "0.01111000"
+          local-storage-price "0.00014000"
+          local-storage-size 100
+          currency-fn (fn [x] x)
+          snapshot-price "0.00014000"
+          snapshot "Yes"
+          snapshot-amount 5
+          expected "0.10205"]
+      (is (= expected (sut instance-price
+                           license-win-price
+                           local-storage-price
+                           local-storage-size
+                           currency-fn
+                           snapshot-price
+                           snapshot
+                           snapshot-amount))))))
 
 (deftest calculate-compute-cost-storage-jumbo-no-windows-20TB-test
   (testing "Storage Optimized Instance: JUMBO without windows license with 20TB of storage."
@@ -238,13 +265,34 @@
           license-win-price "0"
           local-storage-price "0.00006000"
           local-storage-size 20000
-          expected "2.97778"
-          currency-fn (fn [x] x)]
+          currency-fn (fn [x] x)
+          expected "2.97778"]
       (is (= expected (sut instance-price
                            license-win-price
                            local-storage-price
                            local-storage-size
                            currency-fn))))))
+
+(deftest calculate-compute-cost-storage-jumbo-no-windows-20TB-snapshot-test
+  (testing "Storage Optimized Instance: JUMBO without windows license with 20TB of storage."
+    (let [sut sut/calculate-compute-cost
+          instance-price "1.77778000"
+          license-win-price "0"
+          local-storage-price "0.00006000"
+          local-storage-size 20000
+          snapshot-price "0.00014000"
+          snapshot "Yes"
+          snapshot-amount 5
+          currency-fn (fn [x] x)
+          expected "16.97778"]
+      (is (= expected (sut instance-price
+                           license-win-price
+                           local-storage-price
+                           local-storage-size
+                           currency-fn
+                           snapshot-price 
+                           snapshot 
+                           snapshot-amount))))))
 
 (deftest calculate-compute-cost-gpu-huge-no-windows-1600GB-test
   (testing "GPU Instance: HUGE without windows license with 1.6TB of storage."
@@ -253,8 +301,8 @@
           license-win-price "0"
           local-storage-price "0.00014000"
           local-storage-size 1600
-          expected "3.54344"
-          currency-fn (fn [x] x)]
+          currency-fn (fn [x] x)
+          expected "3.54344"]
       (is (= expected (sut instance-price
                            license-win-price
                            local-storage-price
@@ -270,6 +318,14 @@
           expected 0.04167]
       (is (= expected (sut additional-features compute-pricing))))))
 
+(deftest calculate-no-eip-address-price-test
+  (testing "Ensure that Elastic IP cost is 0 when no eip-address' are chosen"
+    (let [sut sut/calculate-eip-address-price
+          additional-features {:eip-address "No"}
+          compute-pricing {:eip_address "0.01389000"}
+          expected 0]
+      (is (= expected (sut additional-features compute-pricing))))))
+
 (deftest calculate-template-price-test
   (testing "Ensure that template cost is properly calculated"
     (let [sut sut/calculate-template-price
@@ -280,6 +336,14 @@
           expected 0.0417]
       (is (= expected (sut additional-features compute-pricing))))))
 
+(deftest calculate-no-template-price-test
+  (testing "Ensure that template cost is 0 when no templates are chosen"
+    (let [sut sut/calculate-template-price
+          additional-features {:custom-template "No"}
+          compute-pricing {:template "0.00139000"}
+          expected 0]
+      (is (= expected (sut additional-features compute-pricing))))))
+
 (deftest calculate-object-storage-price-test
   (testing "Ensure that object storage cost is properly calculated"
     (let [sut sut/calculate-object-storage-price
@@ -287,6 +351,14 @@
                                :object-storage-size 1000}
           object-storage-pricing {:storage_volume "0.00002750"}
           expected 0.0275]
+      (is (= expected (sut additional-features object-storage-pricing))))))
+
+(deftest calculate-no-object-storage-price-test
+  (testing "Ensure that object storage cost is 0 when no object storage is chosen"
+    (let [sut sut/calculate-object-storage-price
+          additional-features {:object-storage "No"}
+          object-storage-pricing {:storage_volume "0.00002750"}
+          expected 0]
       (is (= expected (sut additional-features object-storage-pricing))))))
 
 (deftest calculate-additional-features-cost-test
@@ -309,6 +381,26 @@
                            compute-pricing
                            object-storage-pricing
                            currency-fn))))))
+
+(deftest calculate-instance-cost-test
+  (testing "Ensure instance cost is properly calculated"
+    (let [sut sut/calculate-instance-cost
+          selection {:product-group "Standard Instances"
+                     :instance-type "MICRO"
+                     :local-storage-size 100
+                     :windows-license? "Yes"
+                     :snapshot "Yes"
+                     :snapshot-amount 1}
+          compute-pricing {:running_micro "0.00694000"
+                           :snapshot "0.00014000"}
+          license-win-price "0.01111000"
+          currency-fn (fn [x] x)
+          expected 0.03205]
+      (is (= expected (sut selection
+                           compute-pricing
+                           license-win-price
+                           currency-fn))))))
+
 
 (deftest calculate-product-cost-std-micro-windows-10GB-CHF-test
   (testing "Standard Instance: MICRO with windows license with 10GB of storage in CHF."
@@ -528,7 +620,6 @@
                                   :storage_traffic "0.02000000"}
           expected "₣0.00000"]
       (is (= expected (sut selection-list
-                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -545,7 +636,6 @@
                                   :storage_traffic "0.02000000"}
           expected "€0.00000"]
       (is (= expected (sut selection-list
-                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -562,7 +652,6 @@
                                   :storage_traffic "0.02000000"}
           expected "$0.00000"]
       (is (= expected (sut selection-list
-                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -599,7 +688,6 @@
                                   :storage_traffic "0.02000000"}
           expected "₣6.57272"]
       (is (= expected (sut selection-list
-                           ""
                            currency-type
                            compute-pricing
                            license-win-price
@@ -643,6 +731,7 @@
                                :traffic-free ""                               
                                :object-storage "Yes"
                                :object-storage-size 2000}
+          selection-list (conj selection-list additional-features)
           currency-type "CHF"
           compute-pricing {:running_medium "0.04444000"
                            :running_gpu2_huge "3.31944000"
@@ -654,11 +743,8 @@
           license-win-price "0.01111000"
           object-storage-pricing {:storage_volume "0.00002750"
                                   :storage_traffic "0.02000000"}
-          expected "₣3.81625"]
+          expected "₣4.21135"]
       (is (= expected (sut selection-list
-                           {:product-group "Additional Features"
-                            :eip-address "Yes"
-                            :eip-address-amount 3}; additional-features
                            currency-type
                            compute-pricing
                            license-win-price

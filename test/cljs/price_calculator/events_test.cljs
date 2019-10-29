@@ -3,8 +3,6 @@
             [price-calculator.db :as db]
             [cljs.test :refer-macros [deftest is testing run-tests]]))
 
-(def test-db {})
-
 (deftest initialize-db-test
   (testing "Ensure db is properly initialized with default-db."
     (let [db db/default-db
@@ -58,7 +56,11 @@
           event [::fetch-object-storage-pricing-success "data"]
           sut sut/fetch-object-storage-pricing-success]
       (is (= "data"
-             (:object-storage-pricing-result (:success (:http (sut db event)))))))))
+             (-> db
+                 (sut event)
+                 :http
+                 :success
+                 :object-storage-pricing-result))))))
 
 (deftest fetch-object-storage-pricing-failure-test
   (testing "Ensure http failure is caught."
@@ -66,7 +68,11 @@
           event [::fetch-object-storage-pricing-failure "data"]
           sut sut/fetch-object-storage-pricing-failure]
       (is (= "data"
-             (:object-storage-pricing-error (:failure (:http (sut db event)))))))))
+             (-> db
+                 (sut event)
+                 :http
+                 :failure
+                 :object-storage-pricing-error))))))
 
 (deftest set-product-group-test
   (testing "Ensure product-group is properly attached to db."
@@ -117,9 +123,85 @@
              (:currency-type (sut db event)))))))
 
 (deftest add-selection-test
-  (testing "Ensure currency-type is properly attached to db."
+  (testing "Ensure selection is properly added to selection-list."
     (let [db db/default-db
           event [::add-selection "data"]
           sut sut/add-selection]
-      (is (= ["data"]             
-             (:selection-list (sut db event)))))))
+      (is (= ["data"]
+             (:selection-list (sut db event))))
+      (is (= ["data" "data"]
+             (:selection-list (sut (sut db event) event))))
+      (is (= ["data" "data" "data"]
+             (:selection-list (sut (sut (sut db event) event) event)))))))
+
+(deftest add-features-test
+  (testing "Ensure that additional features are properly stored in db."
+    (let [db db/default-db
+          event [::add-features "data"]
+          sut sut/add-features]
+      (is (= "data"
+             (:additional-features (sut db event)))))))
+
+(deftest set-dns-package-test
+  (testing "Ensure that dns package is properly stored in db."
+    (let [db db/default-db
+          event [::set-dns-package "data"]
+          sut sut/set-dns-package]
+      (is (= "data"
+             (:dns-package (:current-selection (sut db event))))))))
+
+(deftest set-eip-address-test
+  (testing "Ensure that elastic IP address is properly stored in db."
+    (let [db db/default-db
+          event [::set-eip-address "data"]
+          sut sut/set-eip-address]
+      (is (= "data"
+             (:eip-address (:current-selection (sut db event))))))))
+
+(deftest set-eip-address-amount-test
+  (testing "Ensure that elastic IP address amount is properly stored in db."
+    (let [db db/default-db
+          event [::set-eip-address-amount "data"]
+          sut sut/set-eip-address-amount]
+      (is (= "data"
+             (:eip-address-amount (:current-selection (sut db event))))))))
+
+(deftest set-custom-template-test
+  (testing "Ensure that custom template is properly stored in db."
+    (let [db db/default-db
+          event [::set-custom-template "data"]
+          sut sut/set-custom-template]
+      (is (= "data"
+             (:custom-template (:current-selection (sut db event))))))))
+
+(deftest set-custom-template-size-test
+  (testing "Ensure that custom template size is properly stored in db."
+    (let [db db/default-db
+          event [::set-custom-template-size "data"]
+          sut sut/set-custom-template-size]
+      (is (= "data"
+             (:custom-template-size (:current-selection (sut db event))))))))
+
+(deftest set-custom-template-zones-test
+  (testing "Ensure that custom template zones is properly stored in db."
+    (let [db db/default-db
+          event [::set-custom-template-zones "data"]
+          sut sut/set-custom-template-zones]
+      (is (= "data"
+             (:custom-template-zones (:current-selection (sut db event))))))))
+
+(deftest set-object-storage-test
+  (testing "Ensure that object storage is properly stored in db."
+    (let [db db/default-db
+          event [::set-object-storage "data"]
+          sut sut/set-object-storage]
+      (is (= "data"
+             (:object-storage (:current-selection (sut db event))))))))
+
+(deftest set-object-storage-size-test
+  (testing "Ensure that object storage size is properly stored in db."
+    (let [db db/default-db
+          event [::set-object-storage-size "data"]
+          sut sut/set-object-storage-size]
+      (is (= "data"
+             (:object-storage-size (:current-selection (sut db event))))))))

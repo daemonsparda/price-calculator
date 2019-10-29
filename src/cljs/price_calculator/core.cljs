@@ -24,6 +24,6 @@
   (rf/dispatch-sync [::events/fetch-license-pricing])
   (rf/dispatch-sync [::events/fetch-compute-pricing])
   (rf/dispatch-sync [::events/fetch-object-storage-pricing])
-        
+
   (dev-setup)
   (mount-root))

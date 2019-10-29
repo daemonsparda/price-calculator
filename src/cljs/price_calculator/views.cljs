@@ -9,53 +9,47 @@
 
 ;; home
 
-(defn home-panel []
+(defn home-panel
+  []
   (let [name (rf/subscribe [::subs/name])]
     [:div
      [:h1 (str @name " Assessment")]
-     [:a {:href "#/lets-get-started"} "Let's get started"]]))
+     [:a {:href "#/price-calculator"} "Price Calculator"]]))
 
-(defn additional-features [] 
+(defn additional-features
+  []
   [:div
-   [choose/dns-package]
-   [:p]
    [choose/eip-address]
-   [:p]
    [choose/custom-templates]
-   [:p]
-   [choose/object-storage]])
+   [choose/object-storage]
+   [choose/dns-package]])
 
-(defn price-calculator []
-  [:div.container
-   [:div {:class "px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center"}
+(defn price-calculator-header
+  []
+  [:div {:class "px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center"}
     [:div {:class "display-4"}
      "Price Calculator Assessment"
      [:p {:class "lead"}
       "You can find more information about Exoscale products at "
       [:a {:href "https://www.exoscale.com/pricing/"}
-       "https://www.exoscale.com/pricing/"]]]]
+       "https://www.exoscale.com/pricing/"]]]])
+
+(defn price-calculator []
+  [:div.container
+   [price-calculator-header]
    [choose/product-group]
-   [:p]
    (if (= :additional-features @(rf/subscribe [::subs/product-group-key]))
      [additional-features]
      [:div
-      [:p]
-      [choose/gpu-type @(rf/subscribe [::subs/product-group-key])]
-      [:p]
-      [choose/instance-type @(rf/subscribe [::subs/product-group-key])]
-      [:p]
+      [choose/gpu-type]
+      [choose/instance-type]
       [choose/license]
-      [:p]
       [choose/local-storage-size]
-      [:p]
-      [choose/snapshot]
-      ])
-   [:p]
+      [choose/snapshot]])
    [pc/add-selection]
-   [:p]
    [pc/price-calculator]
    [pc/selection-table]
-   [pc/additional-features-selection-table]])
+   [pc/additional-features-table]])
 
 ;; main
 

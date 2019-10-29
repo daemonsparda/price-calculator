@@ -32,7 +32,7 @@
  fetch-license-pricing-success)
 
 (defn-traced fetch-license-pricing-failure
- [db [_ result]]
+  [db [_ result]]
   (assoc-in db [:http :failure :license-pricing-error] result))
 
 (re-frame/reg-event-db
@@ -40,14 +40,14 @@
  fetch-license-pricing-failure)
 
 (defn-traced fetch-license-pricing
- [{:keys [db]} _]
- {:db (assoc db :show-loading-screen true)
-  :http-xhrio {:method :get
-               :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/licenses.json"
-               :timeout 8000
-               :response-format (ajax/json-response-format {:keywords? true})
-               :on-success [::fetch-license-pricing-success]
-               :on-failure [::fetch-license-pricing-failure]}})
+  [{:keys [db]} _]
+  {:db (assoc db :show-loading-screen true)
+   :http-xhrio {:method :get
+                :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/licenses.json"
+                :timeout 8000
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success [::fetch-license-pricing-success]
+                :on-failure [::fetch-license-pricing-failure]}})
 
 (re-frame/reg-event-fx
  ::fetch-license-pricing
@@ -70,14 +70,14 @@
  fetch-compute-pricing-failure)
 
 (defn-traced fetch-compute-pricing
- [{:keys [db]} _]
- {:db (assoc db :show-loading-screen true)
-  :http-xhrio {:method :get
-               :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/opencompute.json"
-               :timeout 8000
-               :response-format (ajax/json-response-format {:keywords? true})
-               :on-success [::fetch-compute-pricing-success]
-               :on-failure [::fetch-compute-pricing-failure]}})
+  [{:keys [db]} _]
+  {:db (assoc db :show-loading-screen true)
+   :http-xhrio {:method :get
+                :uri "https://sos-de-muc-1.exo.io/exercises-pricing-data/opencompute.json"
+                :timeout 8000
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success [::fetch-compute-pricing-success]
+                :on-failure [::fetch-compute-pricing-failure]}})
 
 (re-frame/reg-event-fx
  ::fetch-compute-pricing
@@ -85,7 +85,7 @@
 
 
 (defn-traced fetch-object-storage-pricing-success
- [db [_ result]]
+  [db [_ result]]
   (assoc-in db [:http :success :object-storage-pricing-result] result))
 
 (re-frame/reg-event-db
@@ -232,7 +232,7 @@
 (re-frame/reg-event-db
  ::set-eip-address
  set-eip-address)
- 
+
 (defn-traced set-eip-address-amount
   [db [_ value]]
   (assoc-in db [:current-selection :eip-address-amount] value))

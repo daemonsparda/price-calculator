@@ -15,13 +15,14 @@
      (str "running_" (case (:product-group selection)
                        "Standard Instances" ""
                        "Storage Optimized Instances" "storage_"
-                       "GPU Instances" (if (= (:gpu-type selection) :gpu)
+                       "GPU Instances" (if (= (:gpu-type selection) "GPU (Tesla P100)")
                                          "gpu_"
                                          "gpu2_")
                        :default "")
           (csk/->snake_case_string
            (str/lower-case (:instance-type selection)))))))
 
+;; this is running twice
 (defn calculate-compute-cost
   [instance-price
    license-win-price
@@ -36,7 +37,7 @@
         local-storage-price (read-string local-storage-price)
         snapshot-price (read-string snapshot-price)
         snapshot-price (if (= "Yes" snapshot)
-                         (* snapshot-amount snapshot-price)
+                         (* snapshot-amount snapshot-price local-storage-size)
                          0)]
     (pprint-output
      (currency-fn
@@ -121,7 +122,7 @@
                       "CHF" (fn [x] x)
                       "EUR" (fn [x] (* x CHF->EUR))
                       "USD" (fn [x] (* x CHF->USD)))]
-    (if (= (:product-group selection) "Additional Features") 
+    (if (= (:product-group selection) "Additional Features")
       (calculate-additional-features-cost
        selection
        compute-pricing
@@ -135,7 +136,6 @@
 
 (defn calculate-total
   [selection-list
-   additional-features
    currency-type
    compute-pricing
    license-win-price
@@ -143,8 +143,7 @@
   (let [currency-symbol (case currency-type
                           "CHF" "₣"
                           "EUR" "€"
-                          "USD" "$")
-        selection-list (conj selection-list additional-features)]
+                          "USD" "$")]
     (if (empty? selection-list)
       (str currency-symbol "0.00000")
       (str currency-symbol
